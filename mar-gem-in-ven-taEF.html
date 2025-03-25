@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<title>Calculadora de inventário</title>
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        background: linear-gradient(125deg, #b8c6db 0%, #f5f7fa 100%);
+        margin: 0;
+        padding: 20px;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+    }
+    .container {
+        max-width: 800px;
+        width: 100%;
+    }
+    .macOS-window {
+        background-color: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+        margin-bottom: 20px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .window-header {
+        background: linear-gradient(to bottom, #f2f2f2, #e6e6e6);
+        padding: 8px 15px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #ddd;
+    }
+    .window-buttons {
+        display: flex;
+        gap: 6px;
+        margin-right: 15px;
+    }
+    .window-button {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .close-button {
+        background-color: #2e3add;
+    }
+    .minimize-button {
+        background-color: #2e9aff;
+    }
+    .maximize-button {
+        background-color: #28c9b3;
+    }
+    .window-title {
+        flex: 1;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 500;
+        color: #666;
+    }
+    .logo img {
+        display: block;
+        max-width: 50px;
+        height: auto;
+        margin: 20px auto;
+    }
+    .calculator {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding: 20px;
+    }
+    .inputs {
+        flex: 1;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        min-width: 300px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .results-card {
+        flex: 1;
+        background: linear-gradient(135deg, #0078d7, #005da7);
+        color: white;
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        min-width: 300px;
+    }
+    h2 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 25px;
+        font-weight: 500;
+    }
+    form label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #666;
+        font-size: 14px;
+    }
+    form input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background-color: white;
+        color: #333;
+        font-weight: 500;
+        font-family: inherit;
+        text-align: right;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    form input:focus {
+        border-color: #0078d7;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 120, 215, 0.2);
+    }
+    .button-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 5px;
+    }
+    form button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        font-weight: 500;
+    }
+    form button:first-child {
+        background: linear-gradient(to bottom, #0078d7, #0067b8);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    form button:first-child:hover {
+        background: linear-gradient(to bottom, #0086e8, #0074cc);
+    }
+    form button.secondary {
+        background: linear-gradient(to bottom, #34c759, #30b650);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    form button.secondary:hover {
+        background: linear-gradient(to bottom, #3ddf65, #36cc5a);
+    }
+    .results {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .result-item {
+        margin-bottom: 25px;
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 8px;
+    }
+    .result-label {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 5px;
+    }
+    .result-value {
+        font-size: 24px;
+        color: white;
+        font-weight: 500;
+        word-break: break-word;
+    }
+    .reset-button {
+        background: linear-gradient(to bottom, #ff3b30, #e0352b);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 10px;
+        font-size: 14px;
+        cursor: pointer;
+        font-weight: 500;
+        margin-top: auto;
+        font-family: inherit;
+        width: 100%;
+        transition: background 0.2s;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .reset-button:hover {
+        background: linear-gradient(to bottom, #ff4d43, #f0453b);
+    }
+    .footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 0.85em;
+        color: #666;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        width: 100%;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .dock {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 8px;
+        display: flex;
+        gap: 10px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .dock-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+    .dock-icon:hover {
+        transform: scale(1.1);
+    }
+    .menubar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        display: flex;
+        padding: 8px 15px;
+        font-size: 13px;
+        color: #333;
+        z-index: 1000;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .menu-apple {
+        margin-right: 15px;
+        font-weight: bold;
+    }
+    .menu-items {
+        display: flex;
+        gap: 15px;
+    }
+    .menu-right {
+        margin-left: auto;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    /* Login screen styles */
+    #loginScreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(125deg, #b8c6db 0%, #f5f7fa 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+    .login-container {
+        background-color: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        padding: 30px;
+        width: 320px;
+        text-align: center;
+    }
+    .login-container h2 {
+        margin-bottom: 20px;
+    }
+    .login-container input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        text-align: center;
+        font-size: 16px;
+    }
+    .login-container button {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(to bottom, #0078d7, #0067b8);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .login-container button:hover {
+        background: linear-gradient(to bottom, #0086e8, #0074cc);
+    }
+    .login-error {
+        color: #ff3b30;
+        margin-bottom: 15px;
+        display: none;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .calculator {
+            flex-direction: column;
+        }
+        .inputs, .results-card {
+            width: 100%;
+        }
+        .dock {
+            display: none;
+        }
+    }
+</style>
+<body>
+<!-- Login Screen -->
+<div id="loginScreen">
+    <div class="login-container">
+        <h2>Acesso ao Sistema</h2>
+        <p>Digite a senha para continuar</p>
+        <div id="loginError" class="login-error">Senha incorreta. Tente novamente.</div>
+        <input type="password" id="passwordInput" placeholder="Digite sua senha">
+        <button onclick="verificarSenha()">Entrar</button>
+    </div>
+</div>
+
+<div id="appContent" style="display: none;">
+    <div class="menubar">
+        <div class="menu-apple">
+            <span>🐼</span>
+        </div>
+        <div class="menu-items">
+            <span>Panda Hub</span>
+        </div>
+        <div class="menu-right">
+            <span>🔋 100%</span>
+            <span>📶</span>
+            <span id="clock">12:30</span>
+        </div>
+    </div>
+    <div class="container">
+        <div class="macOS-window">
+            <div class="window-header">
+                <div class="window-buttons">
+                    <div class="window-button close-button"></div>
+                    <div class="window-button minimize-button"></div>
+                    <div class="window-button maximize-button"></div>
+                </div>
+                <div class="window-title">Calculadora de Estoque Final</div>
+            </div>
+            <div class="logo">
+                <img src="https://help.apple.com/assets/63FD49E28D6264536445EC7D/63FD49E28D6264536445EC84/pt_BR/f19c7e914f0adb59c0833d00d09f1ea7.png" alt="logo da calculadora de estoque final">
+            </div>
+            <div class="calculator">
+                <div class="inputs">
+                    <form id="estoqueForm">
+                        <label for="estoqueInicial">Estoque inicial (R$)</label>
+                        <input type="text" id="estoqueInicial" placeholder="Ex: 3.700,00">
+                        <label for="compras">Compras (R$)</label>
+                        <input type="text" id="compras" placeholder="Ex: 2230,00">
+                        <label for="vendas">Vendas (R$)</label>
+                        <input type="text" id="vendas" placeholder="Ex: 5.200,00">
+                        <label for="margemLucro">Margem de Lucro (%)</label>
+                        <input type="text" id="margemLucro" placeholder="Ex: 20">
+                        <label for="estoqueCliente">Estoque do cliente (R$)</label>
+                        <input type="text" id="estoqueCliente" placeholder="Ex: 2.280,00">
+                        <div class="button-group">
+                            <button type="button" onclick="calcularEstoqueFinal()">Calcular EF</button>
+                            <button type="button" class="secondary" onclick="calcularMargemExata()">Margem de confronto</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="results-card">
+                    <div class="results">
+                        <div>
+                            <div class="result-item">
+                                <div class="result-label">Estoque Final</div>
+                                <div class="result-value" id="resultadoEstoqueFinal">R$ 0,00</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Estoque do cliente está</div>
+                                <div class="result-value" id="comparacaoEstoque">R$ 0,00</div>
+                            </div>
+                        </div>
+                        <button class="reset-button" onclick="document.getElementById('estoqueForm').reset();document.getElementById('resultadoEstoqueFinal').innerText='R$ 0,00';document.getElementById('comparacaoEstoque').innerText='R$ 0,00';">RESET</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Fórmulas do cálculo:<br>
+            CMV = EI + C - EF <br>
+            EF = EI + C - CMV <br>
+            CMV = VENDAS - MARGEM</p>
+            <p>©2025 Panda Technology Hub</p>
+        </div>
+    </div>
+    <div class="dock">
+        <div class="dock-icon">🧮</div>
+        <div class="dock-icon">📊</div>
+        <div class="dock-icon">📁</div>
+        <div class="dock-icon">📝</div>
+        <div class="dock-icon">📧</div>
+    </div>
+</div>
+
+<script>
+    // Verificação de senha
+    function verificarSenha() {
+        const senhaCorreta = "5678";
+        const senhaDigitada = document.getElementById('passwordInput').value;
+        
+        if (senhaDigitada === senhaCorreta) {
+            // Armazenar autenticação
+            localStorage.setItem('autenticado', 'true');
+            // Mostrar o conteúdo do app
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContent').style.display = 'block';
+        } else {
+            // Mostrar mensagem de erro
+            document.getElementById('loginError').style.display = 'block';
+        }
+    }
+    
+    // Verificar se já está autenticado ao carregar a página
+    window.onload = function() {
+        if (localStorage.getItem('autenticado') === 'true') {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContent').style.display = 'block';
+        }
+        atualizarRelogio();
+    }
+    
+    // Permitir pressionar Enter para fazer login
+    document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            verificarSenha();
+        }
+    });
+    
+    //início aqui
+    var message="";
+    function clickIE() {if (document.all) {(message);return false;}}
+    function clickNS(e) {if
+    (document.layers||(document.getElementById&&!document.all)) {
+    if (e.which==2||e.which==3) {(message);return false;}}}
+    if (document.layers)
+    {document.captureEvents(Event.MOUSEDOWN);document.onmousedown=clickNS;}
+    else{document.onmouseup=clickNS;document.oncontextmenu=clickIE;}
+    document.oncontextmenu=new Function("return false")
+    // F12
+    //==========
+    document.onkeypress = function (event) {
+        var e = event || window.event;
+        if (e.ctrlKey && (e.keyCode === 123)) {
+            // alert('not allowed');
+            return false;
+        }
+    };
+    // CTRL + u
+    //==============
+    document.onkeydown = function(e) {
+        e = e || window.event;
+        if (e.ctrlKey && (e.keyCode === 85)) {
+            // alert('not allowed');
+            return false;
+        }
+    };
+    //Final aqui
+    // Função para formatar valor de string para float
+    function formatarValor(valor) {
+        return parseFloat(valor.replace(/\./g, '').replace(',', '.'));
+    }
+    // Função para formatar número como moeda brasileira
+    function formatarResultado(valor) {
+        return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function calcularEstoqueFinal() {
+        var estoqueInicial = formatarValor(document.getElementById('estoqueInicial').value);
+        var compras = formatarValor(document.getElementById('compras').value);
+        var vendas = formatarValor(document.getElementById('vendas').value);
+        var margemLucro = formatarValor(document.getElementById('margemLucro').value) / 100;
+        var estoqueCliente = formatarValor(document.getElementById('estoqueCliente').value);
+        var estoqueFinal = estoqueInicial + compras - (vendas - (vendas * margemLucro));
+        var diferencaEstoque = estoqueCliente - estoqueFinal;
+        document.getElementById('resultadoEstoqueFinal').innerText = 'R$ ' + formatarResultado(estoqueFinal);
+        var mensagemComparacao = (diferencaEstoque > 0 ? 'Maior' : 'Menor') +
+                                ' em R$ ' + formatarResultado(Math.abs(diferencaEstoque));
+        document.getElementById('comparacaoEstoque').innerText = mensagemComparacao;
+    }
+    function calcularMargemExata() {
+        var estoqueInicial = formatarValor(document.getElementById('estoqueInicial').value);
+        var compras = formatarValor(document.getElementById('compras').value);
+        var vendas = formatarValor(document.getElementById('vendas').value);
+        var estoqueCliente = formatarValor(document.getElementById('estoqueCliente').value);
+        // Calculando a margem que faz o estoque final igual ao estoque do cliente
+        // Derivado da fórmula: estoqueCliente = estoqueInicial + compras - (vendas - (vendas * margemLucro))
+        var margemExata = (estoqueCliente - estoqueInicial - compras + vendas) / vendas;
+        var margemExataPercent = margemExata * 100;
+        // Preenchendo o campo de margem de lucro com o valor calculado
+        document.getElementById('margemLucro').value = formatarResultado(margemExataPercent);
+        // Calculando o estoque final com a margem exata para confirmar
+        var estoqueFinal = estoqueInicial + compras - (vendas - (vendas * margemExata));
+        document.getElementById('resultadoEstoqueFinal').innerText = 'R$ ' + formatarResultado(estoqueFinal);
+        document.getElementById('comparacaoEstoque').innerText = formatarResultado(margemExataPercent) + '% (Margem de confronto)';
+    }
+    // Atualizar o relógio
+    function atualizarRelogio() {
+        const agora = new Date();
+        const horas = agora.getHours().toString().padStart(2, '0');
+        const minutos = agora.getMinutes().toString().padStart(2, '0');
+        document.getElementById('clock').textContent = `${horas}:${minutos}`;
+    }
+    // Atualizar o relógio a cada minuto
+    setInterval(atualizarRelogio, 60000);
+</script>
+</body>
+</html>
